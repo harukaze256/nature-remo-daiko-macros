@@ -1,0 +1,10 @@
+<!-- Template only. Replace the placeholder locally; do not publish the resulting XML. -->
+<macro name="DAIKO ON" icon="PLAY">
+  <assert-service uuid="0000ffb0-0000-1000-8000-00805f9b34fb">
+    <assert-characteristic uuid="0000ffb2-0000-1000-8000-00805f9b34fb">
+      <property name="WRITE" requirement="MANDATORY" />
+    </assert-characteristic>
+  </assert-service>
+  <write characteristic-uuid="0000ffb2-0000-1000-8000-00805f9b34fb" service-uuid="0000ffb0-0000-1000-8000-00805f9b34fb" value="REPLACE_WITH_PRIVATE_ON_PAYLOAD_LOCALLY" type="WRITE_REQUEST" />
+  <sleep timeout="300" />
+</macro>
