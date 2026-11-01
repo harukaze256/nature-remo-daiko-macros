@@ -30,7 +30,6 @@ Nature Homeで対象のBLE家電を開き、「＋」から名前とPUBLIC GITHU
 
 - 点灯用は、このリポジトリのon.xmlのGitHubファイルURLを指定します。
 - 消灯用は、このリポジトリのoff.xmlのGitHubファイルURLを指定します。
-- service-check.xmlはサービス存在確認用で、点灯・消灯の書込みは行いません。
 
 ## 通信内容
 
