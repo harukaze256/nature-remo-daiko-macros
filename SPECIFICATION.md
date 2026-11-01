@@ -199,3 +199,7 @@ Nature Home（公式アプリ）／Cloud API ─ Nature Cloud ─ Remo ─(BLE)�
 - [ライトスタイル：Bluetooth通信対応 次世代LEDダウンライト発売](https://lightstyle.jp/?bgc=10000461&cn=100040)
 - [ライトスタイル：DDL-4444FW](https://www.lightstyle.jp/?cn=100026&shc=10053084)
 - [App Store：スマートリモコン（大光電機）](https://apps.apple.com/jp/app/%E3%82%B9%E3%83%9E%E3%83%BC%E3%83%88%E3%83%AA%E3%83%A2%E3%82%B3%E3%83%B3/id870308798)
+- [APKPure：スマートリモコン（Android版 `jp.co.daiko.rimocon`）](https://apkpure.net/smart-remote-control/jp.co.daiko.rimocon/download)
+  - 解析に使った旧アプリの入手元（第三者の配布サイト）。インストール・実行はせず、中身を読み取って解析した。
+  - 解析した版：1.2.1（versionCode 9）、952,697 bytes、SHA-256 `061E4955730CEE30073AE700146DDD8CBA2333501435B41BECD4DC7F103E6F2F`
+  - 署名証明書の組織名は `DAIKO ELECTRIC CO LTD.`。メーカーが公表したハッシュとの照合はしていない。
