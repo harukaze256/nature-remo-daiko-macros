@@ -1,9 +1,0 @@
-<macro name="DAIKO 100% C0 corrected" icon="PLAY">
-  <assert-service uuid="0000ffb0-0000-1000-8000-00805f9b34fb">
-    <assert-characteristic uuid="0000ffb2-0000-1000-8000-00805f9b34fb">
-      <property name="WRITE" requirement="MANDATORY" />
-    </assert-characteristic>
-  </assert-service>
-  <write description="Main light ON" characteristic-uuid="0000ffb2-0000-1000-8000-00805f9b34fb" service-uuid="0000ffb0-0000-1000-8000-00805f9b34fb" value="3033373936C0F00D00000000000000130C000000" type="WRITE_REQUEST" />
-  <sleep timeout="300" />
-</macro>
