@@ -53,3 +53,9 @@ python -m unittest -v test_generate
 - [Natureのマクロ操作仕様](https://engineering.nature.global/entry/ble-macro-beta-operation)
 
 本ツールはNature・DAIKOの公式製品ではありません。
+
+## 調光・調色プリセット
+
+明度10・50・100%と暖色(C000)・中間(C050)・寒色(C100)の9通りを追加しました。scene-b010-c000.xmlのように名前へ明度と光色を含めています。各ボタンは両方の値を同時に設定して点灯します。明度%は制御スケールの相対値であり、測定した光束や照度ではありません。色温度のK値は器具型番未確認のため示していません。
+
+Nature Homeの対象照明で「＋」から各XMLのGitHub URLを登録し、動作テスト後に保存します。PCアプリでも家電を再読込すると日本語の操作名で表示され、予約へ追加できます。
