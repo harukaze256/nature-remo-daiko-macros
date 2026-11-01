@@ -24,6 +24,18 @@ python generate.py --settings <PRIVATE_SETTINGS_JSON> --output <PRIVATE_OUTPUT_D
 
 既存の出力ファイルは上書きしません。ネットワークへの送信は行いません。接続コードをコマンドライン引数や環境変数へ直接入れる必要もありません。
 
+### シーン用XML（明度・色温度を指定）
+
+明度と色温度を0〜100%で指定すると、その値に固定したONマクロを1つ生成します。明度は100%が最も明るく、色温度は0%が最も暖色、100%が最も寒色です。
+
+```text
+python generate.py --settings <PRIVATE_SETTINGS_JSON> --output <PRIVATE_OUTPUT_DIRECTORY> --brightness 40 --color 20 --name rest
+```
+
+- ファイル名は `level-b<明度>-c<色温度>[-<名前>].xml`（例：`level-b040-c020-rest.xml`）。`--name` は英小文字と数字だけで、省略できます。
+- %から送信値への変換は「明度・光色の向き」の節のとおりです。消灯扱いになる明度238は自動で237に置き換えます。
+- 下の「生活シーン用ボタン」のXMLも、この機能で同じ内容を生成できます。
+
 ## 公開範囲とNature Homeへの登録
 
 on.xmlとoff.xmlには、接続コードが16進数の送信データとして含まれます。これらは公開に了承した特定の照明向けです。他の照明でそのまま使う場合の動作は保証しません。
