@@ -1,0 +1,73 @@
+"""Generate private Nature Remo XML from a configuration stored outside this repo.
+
+No network access, account identifier, device address or connection code is built in.
+"""
+import argparse
+import datetime
+import json
+import pathlib
+import xml.etree.ElementTree as ET
+
+SERVICE = '0000ffb0-0000-1000-8000-00805f9b34fb'
+CHARACTERISTIC = '0000ffb2-0000-1000-8000-00805f9b34fb'
+SOURCE_DIRECTORY = pathlib.Path(__file__).resolve().parent
+
+def validate_settings(settings):
+    if not isinstance(settings,dict):raise ValueError('Settings must be a JSON object.')
+    sid=settings.get('sid')
+    if not isinstance(sid,str) or len(sid)!=5 or not sid.isascii() or not sid.isdigit():
+        raise ValueError('A five-digit ASCII connection code is required in the private settings file.')
+    for key in ('last_color','last_brightness'):
+        value=settings.get(key,13 if key=='last_color' else 240)
+        if type(value) is not int or not 13<=value<=240:
+            raise ValueError(key+' must be an integer from 13 to 240.')
+
+def build_xml(power,settings,clock=None):
+    if type(power) is not bool:raise ValueError('Power must be a boolean.')
+    validate_settings(settings)
+    clock=clock or datetime.datetime.now()
+    data=bytearray(20)
+    data[:5]=settings['sid'].encode('ascii')
+    data[5]=0xc0
+    data[6]=settings.get('last_color',13) if power else 13
+    data[7]=settings.get('last_brightness',240) if power else 255
+    data[15:17]=bytes((clock.hour,clock.minute))
+    root=ET.Element('macro',name='DAIKO ON' if power else 'DAIKO OFF',icon='PLAY')
+    service=ET.SubElement(root,'assert-service',uuid=SERVICE)
+    characteristic=ET.SubElement(service,'assert-characteristic',uuid=CHARACTERISTIC)
+    ET.SubElement(characteristic,'property',name='WRITE',requirement='MANDATORY')
+    ET.SubElement(root,'write',{'characteristic-uuid':CHARACTERISTIC,'service-uuid':SERVICE,
+        'value':bytes(data).hex().upper(),'type':'WRITE_REQUEST'})
+    ET.SubElement(root,'sleep',timeout='300')
+    ET.indent(root,space='  ')
+    return ET.tostring(root,encoding='unicode')+'\n'
+
+def require_external(path):
+    path=pathlib.Path(path).resolve()
+    if path.is_relative_to(SOURCE_DIRECTORY):
+        raise ValueError('Private settings and generated files must be outside the source directory.')
+    return path
+
+def export(settings_path,output_path):
+    settings_path=require_external(settings_path)
+    output_path=require_external(output_path)
+    settings=json.loads(settings_path.read_text(encoding='utf-8-sig'))
+    clock=datetime.datetime.now()
+    documents={name:build_xml(power,settings,clock) for name,power in [('on.xml',True),('off.xml',False)]}
+    output_path.mkdir(parents=True,exist_ok=True)
+    for name in documents:
+        if (output_path/name).exists():raise FileExistsError('Output already exists; select another private output directory.')
+    for name,text in documents.items():
+        with (output_path/name).open('x',encoding='utf-8') as file:file.write(text)
+    return tuple(output_path/name for name in documents)
+
+def main():
+    parser=argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--settings',required=True,type=pathlib.Path,help='Private JSON file outside the source directory')
+    parser.add_argument('--output',required=True,type=pathlib.Path,help='Private output directory outside the source directory')
+    args=parser.parse_args()
+    try:export(args.settings,args.output)
+    except (ValueError,OSError) as error:parser.exit(1,'Generation failed: '+str(error)+'\n')
+    print('Generated private ON/OFF XML. The files contain the connection code; do not publish them.')
+
+if __name__=='__main__':main()
