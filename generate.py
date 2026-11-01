@@ -11,16 +11,22 @@ import xml.etree.ElementTree as ET
 SERVICE = '0000ffb0-0000-1000-8000-00805f9b34fb'
 CHARACTERISTIC = '0000ffb2-0000-1000-8000-00805f9b34fb'
 SOURCE_DIRECTORY = pathlib.Path(__file__).resolve().parent
+# Smaller values are brighter / cooler: 13 is 100% brightness and the coolest color.
+DEFAULTS = {'last_color':13,'last_brightness':13}
+# The lamp treats brightness raw 238 (0xEE) as OFF.
+BRIGHTNESS_OFF_VALUE = 238
 
 def validate_settings(settings):
     if not isinstance(settings,dict):raise ValueError('Settings must be a JSON object.')
     sid=settings.get('sid')
     if not isinstance(sid,str) or len(sid)!=5 or not sid.isascii() or not sid.isdigit():
         raise ValueError('A five-digit ASCII connection code is required in the private settings file.')
-    for key in ('last_color','last_brightness'):
-        value=settings.get(key,13 if key=='last_color' else 240)
+    for key,default in DEFAULTS.items():
+        value=settings.get(key,default)
         if type(value) is not int or not 13<=value<=240:
             raise ValueError(key+' must be an integer from 13 to 240.')
+    if settings.get('last_brightness',DEFAULTS['last_brightness'])==BRIGHTNESS_OFF_VALUE:
+        raise ValueError('last_brightness 238 turns the lamp off; use 237 or 239.')
 
 def build_xml(power,settings,clock=None):
     if type(power) is not bool:raise ValueError('Power must be a boolean.')
@@ -29,14 +35,15 @@ def build_xml(power,settings,clock=None):
     data=bytearray(20)
     data[:5]=settings['sid'].encode('ascii')
     data[5]=0xc0
-    data[6]=settings.get('last_color',13) if power else 13
-    data[7]=settings.get('last_brightness',240) if power else 255
+    data[6]=settings.get('last_color',DEFAULTS['last_color']) if power else 13
+    data[7]=settings.get('last_brightness',DEFAULTS['last_brightness']) if power else 255
     data[15:17]=bytes((clock.hour,clock.minute))
     root=ET.Element('macro',name='DAIKO ON' if power else 'DAIKO OFF',icon='PLAY')
     service=ET.SubElement(root,'assert-service',uuid=SERVICE)
     characteristic=ET.SubElement(service,'assert-characteristic',uuid=CHARACTERISTIC)
     ET.SubElement(characteristic,'property',name='WRITE',requirement='MANDATORY')
-    ET.SubElement(root,'write',{'characteristic-uuid':CHARACTERISTIC,'service-uuid':SERVICE,
+    ET.SubElement(root,'write',{'description':'Main light ON' if power else 'Main light OFF',
+        'characteristic-uuid':CHARACTERISTIC,'service-uuid':SERVICE,
         'value':bytes(data).hex().upper(),'type':'WRITE_REQUEST'})
     ET.SubElement(root,'sleep',timeout='300')
     ET.indent(root,space='  ')
@@ -57,8 +64,16 @@ def export(settings_path,output_path):
     output_path.mkdir(parents=True,exist_ok=True)
     for name in documents:
         if (output_path/name).exists():raise FileExistsError('Output already exists; select another private output directory.')
-    for name,text in documents.items():
-        with (output_path/name).open('x',encoding='utf-8') as file:file.write(text)
+    written=[]
+    try:
+        for name,text in documents.items():
+            with (output_path/name).open('x',encoding='utf-8') as file:
+                written.append(output_path/name)
+                file.write(text)
+    except OSError:
+        # Don't leave a half-finished ON/OFF pair that blocks the next run.
+        for path in written:path.unlink(missing_ok=True)
+        raise
     return tuple(output_path/name for name in documents)
 
 def main():
