@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<macro name="BLE service check" icon="PLAY">
+  <assert-service uuid="0000ffb0-0000-1000-8000-00805f9b34fb">
+    <assert-characteristic uuid="0000ffb2-0000-1000-8000-00805f9b34fb">
+      <property name="WRITE" requirement="MANDATORY"/>
+    </assert-characteristic>
+  </assert-service>
+</macro>
